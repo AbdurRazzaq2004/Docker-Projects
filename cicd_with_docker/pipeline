@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        REPO_URL = 'https://github.com/AbdurRazzaq2004/Docker-Projects.git' // Replace with your GitHub repository URL
+        BRANCH = 'main' // Replace with the branch you want to use
+        IMAGE_NAME = 'apache-server'
+        CONTAINER_NAME = 'apache-container'
+    }
+
+    stages {
+        stage('Cleanup Workspace') {
+            steps {
+                script {
+                    echo 'Cleaning up any existing directory...'
+                    sh "rm -rf repo"
+                }
+            }
+        }
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo 'Cloning GitHub repository...'
+                    sh "git clone -b ${BRANCH} ${REPO_URL} repo"
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker image...'
+                    sh "docker build -t ${IMAGE_NAME} ./repo"
+                }
+            }
+        }
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    echo 'Running Docker container...'
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 8081:80 ${IMAGE_NAME}"
+                }
+            }
+        }
+        stage('Check Container Status') {
+            steps {
+                script {
+                    echo 'Checking container status...'
+                    sh "docker ps -a | grep ${CONTAINER_NAME}"
+                }
+            }
+        }
+    }
+}
